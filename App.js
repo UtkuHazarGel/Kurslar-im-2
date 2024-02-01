@@ -8,19 +8,25 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import RecentCourses from "./screens/RecentCourses";
 import { AntDesign } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
+import CoursesContextProvider from "./store/coursesContext";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 function CourseOverview() {
   return (
     <Tab.Navigator
-      screenOptions={({navigation})=>({
+      screenOptions={({ navigation }) => ({
         headerStyle: { backgroundColor: "pink" },
         headerTintColor: "white",
         tabBarStyle: { backgroundColor: "pink" },
         tabBarActiveTintColor: "darkblue",
         headerRight: () => (
-          <Pressable style={({ pressed }) => pressed && styles.pressed} onPress={()=>{navigation.navigate("ManageCourse")}} >
+          <Pressable
+            style={({ pressed }) => pressed && styles.pressed}
+            onPress={() => {
+              navigation.navigate("ManageCourse");
+            }}
+          >
             <View style={styles.iconContainer}>
               <AntDesign name="plus" size={24} color="white" />
             </View>
@@ -56,16 +62,18 @@ function CourseOverview() {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="CourseOverview"
-          component={CourseOverview}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen name="ManageCourse" component={ManageCourse} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <CoursesContextProvider>
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            name="CourseOverview"
+            component={CourseOverview}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="ManageCourse" component={ManageCourse} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </CoursesContextProvider>
   );
 }
 
@@ -79,8 +87,8 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.5,
   },
-  iconContainer:{
-    marginHorizontal:8,
-    marginVertical:2
-  }
+  iconContainer: {
+    marginHorizontal: 8,
+    marginVertical: 2,
+  },
 });

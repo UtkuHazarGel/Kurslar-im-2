@@ -85,6 +85,7 @@ function coursesReducer(state, action) {
   }
 }
 
+
 function CoursesContextProvider({ children }) {
   const [coursesState, dispatch] = useReducer(coursesReducer, COURSES);
 
