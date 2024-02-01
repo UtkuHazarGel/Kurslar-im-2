@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Pressable } from "react-native";
+import { StyleSheet, Text, View, Pressable, Alert } from "react-native";
 import React, { useState } from "react";
 import Input from "./Input";
 import { getFormattedDate } from "../helper/date";
@@ -10,24 +10,54 @@ export default function CourseForm({
   defaultValues,
 }) {
   const [inputs, setInputs] = useState({
-    amount: defaultValues ? defaultValues.amount.toString() : "",
-    date: defaultValues ? getFormattedDate(defaultValues.date) : "",
-    description: defaultValues ? defaultValues.description : "",
+    amount: {
+      value: defaultValues ? defaultValues.amount.toString() : "",
+      isValid: true,
+    },
+    date: {
+      value: defaultValues ? getFormattedDate(defaultValues.date) : "",
+      isValid: true,
+    },
+    description: {
+      value: defaultValues ? defaultValues.description : "",
+      isValid: true,
+    },
   });
   function addOrUpdateHandler() {
     const courseData = {
-      amount: Number(inputs.amount),
-      date: new Date(inputs.date),
-      description: inputs.description,
+      amount: Number(inputs.amount.value),
+      date: new Date(inputs.date.value),
+      description: inputs.description.value,
     };
+
+    const amountIsValid = !isNaN(courseData.amount) && courseData.amount > 0;
+    const dateIsValid = courseData.date.toString() !== "Invalid Date";
+    const descIsValid = courseData.description.trim().length > 0;
+    if (!amountIsValid || !dateIsValid || !descIsValid) {
+      setInputs((currentInputs) => {
+        return {
+          amount: {
+            value: Number(currentInputs.amount.value),
+            isValid: amountIsValid,
+          },
+          date: { value: currentInputs.date.value, isValid: dateIsValid },
+          description: {
+            value: currentInputs.description.value,
+            isValid: descIsValid,
+          },
+        };
+      });
+      return;
+    }
     onSubmit(courseData);
   }
   console.log(inputs);
+
   function inputChange(inputIdentifier, enteredValue) {
     setInputs((currentInput) => {
       return {
         ...currentInput,
-        [inputIdentifier]: enteredValue,
+        [inputIdentifier]: { value: enteredValue, isValid: true },
       };
     });
   }
@@ -38,32 +68,47 @@ export default function CourseForm({
         <Input
           label="Tutar"
           style={styles.flexAll}
+          inValid={!inputs.amount.isValid}
           textInputConfig={{
             keyboardType: "decimal-pad",
             onChangeText: inputChange.bind(this, "amount"),
-            value: inputs.amount,
+            value: inputs.amount.value.toString(),
           }}
         />
         <Input
           label="Tarih"
           style={styles.flexAll}
+          inValid={!inputs.date.isValid}
           textInputConfig={{
             placeholder: "YYYY-MM-DD",
             maxLenght: 10,
             onChangeText: inputChange.bind(this, "date"),
-            value: inputs.date,
+            value: inputs.date.value,
           }}
         />
       </View>
 
       <Input
         label="Başlık"
+        inValid={!inputs.description.isValid}
         textInputConfig={{
           multiline: true,
           onChangeText: inputChange.bind(this, "description"),
-          value: inputs.description,
+          value: inputs.description.value,
         }}
       />
+      <View style={styles.error}>
+        
+        {!inputs.amount.isValid && (
+          <Text>Lütfen tutarı doğru formatta giriniz!</Text>
+        )}
+        {!inputs.date.isValid && (
+          <Text>Lütfen tarihi doğru formatta giriniz!</Text>
+        )}
+        {!inputs.description.isValid && (
+          <Text>Lütfen başlığı doğru formatta giriniz!</Text>
+        )}
+      </View>
       <View style={styles.buttons}>
         <Pressable onPress={cancelHandler}>
           <View style={styles.cancel}>
@@ -115,4 +160,8 @@ const styles = StyleSheet.create({
   addOrDeleteText: {
     color: "white",
   },
+  error:{
+    alignItems:"center",
+    marginBottom:10
+  }
 });

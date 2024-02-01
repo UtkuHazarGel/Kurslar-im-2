@@ -1,12 +1,14 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useLayoutEffect, useContext } from "react";
+import React, { useLayoutEffect, useContext, useState } from "react";
 import { EvilIcons } from "@expo/vector-icons";
 import Courses from "../components/Courses";
 import { CoursesContext } from "../store/coursesContext";
 import CourseForm from "../components/CourseForm";
+import { storeCourse, updateCourse , deleteCourseHttp} from "../helper/http";
 
 export default function ManageCourse({ route, navigation }) {
   const coursesContext = useContext(CoursesContext);
+  
   const courseId = route.params?.courseId;
   let isEditing = false;
   const selectedCourse = coursesContext.courses.find(
@@ -21,18 +23,21 @@ export default function ManageCourse({ route, navigation }) {
     });
   }, [navigation, isEditing]);
 
-  function deleteCourse() {
+  async function deleteCourse() {
     coursesContext.deleteCourse(courseId);
+    await deleteCourseHttp(courseId)
     navigation.goBack();
   }
   function cancelHandler() {
     navigation.goBack();
   }
-  function addOrUpdateHandler(courseData) {
+  async function addOrUpdateHandler(courseData) {
     if (isEditing) {
       coursesContext.updateCourse(courseId, courseData);
+      await updateCourse(courseId,courseData)
     } else {
-      coursesContext.addCourse(courseData);
+      const id = await storeCourse(courseData)
+      coursesContext.addCourse({...courseData,id:id});
     }
     navigation.goBack();
   }
